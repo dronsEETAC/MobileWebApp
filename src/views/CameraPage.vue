@@ -127,11 +127,11 @@ export default  defineComponent({
             cv.imshow('output',dst);
           };
         }
-      }
-      
-      mqttHook.registerEvent('cameraService/mobileApp/videoFrame', (topic, message) => {
-        console.log ('recibo frame')
-        openCVFunction.options(topic, message)
+      }      
+
+      mqttHook.registerEvent('cameraService/mobileApp/videoFrame', (topic, message) => {          
+          console.log ('recibo frame')
+          openCVFunction.options(topic, message)
       })
 
       mqttHook.registerEvent('cameraService/mobileApp/picture', (topic, message) => {

@@ -36,7 +36,7 @@ export default  defineComponent({
   setup() {
     let seconds = ref("");
     let connected = ref(true);
-    const mqttHook = useMQTT()
+    const mqttHook = useMQTT();
 
     function startLedSequence(){
       connected.value = false
@@ -57,7 +57,7 @@ export default  defineComponent({
         startNsecondsLedSequence,
         stopLedSequence,
         connected,
-        seconds,
+        seconds
     };
   },
 });

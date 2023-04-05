@@ -16,7 +16,7 @@ const routes: Array<RouteRecordRaw> = [
     component: TabsPage,
     children: [
       {
-        path: 'autopilot',
+        path: 'autopilot/:mode/:player?',
         component: AutopilotPage,
         name: "AutopilotTab",
       },
