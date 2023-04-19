@@ -10,7 +10,7 @@
       <ion-label v-if="mode=='controllers'" style="display: flex; justify-content: center; font-size: 20px; margin-top: 5%;">Waiting for other players to connect...</ion-label>
       <ion-progress-bar type="indeterminate"></ion-progress-bar>
     </ion-content>    
-    <ion-content :fullscreen="true" v-if="!waitingConnection">
+    <ion-content style="height:700px" v-if="!waitingConnection">
       <div style = "width:80%; margin-left:10%">
         <div v-if="!yourTurn && mode=='controllers'" class="yourTurnAlarm">
           <ion-label style="display: flex; justify-content: center; font-size: 20px; margin-top: 5%;">Wait for your turn...</ion-label>
@@ -70,7 +70,7 @@
       <ion-button v-if = "state == 'returningHome'"  class="autopilotButton" :disabled = "true" color="secondary">Returning ...</ion-button>
       <ion-button v-if = "state == 'onHearth'"  class="autopilotButton" :disabled = "true" color="primary">On hearth</ion-button>
 
-      <ion-grid style="border-style: solid; position:fixed;width:80%; bottom: 10px;">
+      <ion-grid style="border-style: solid; width:80%; bottom: 10px;">
       <ion-row>
         <ion-col> 
           <ion-item style = "font-size: 9px; ">
@@ -110,18 +110,22 @@
 import { defineComponent, inject, onMounted, ref } from 'vue';
 import { IonPage,alertController , IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel, IonProgressBar, IonGrid } from '@ionic/vue';
 import { useMQTT } from 'mqtt-vue-hook' 
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import * as turf from '@turf/turf';
 
 export default  defineComponent({
   name: 'AutopilotPage',
   components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel, IonProgressBar, IonGrid },
-
+  ionViewDidEnter(){
+    this.player = this.$route.params.player;
+    this.mode = this.$route.params.mode;
+  },
   setup() {
 
     const emitter = inject('emitter');
     const mqttHook = useMQTT();
-    const route = useRoute()
+    const route = useRoute();
+    const router = useRouter();
     let state = ref('connected');
     let armed = ref(false);
     let flying = ref(false);
@@ -131,6 +135,7 @@ export default  defineComponent({
     let heading = ref(undefined);
     let battery = ref(undefined);
     let direction = ref(undefined);
+
     const presentAlert = async () => {
         const alert = await alertController.create({
           header: 'Alert',
@@ -140,20 +145,27 @@ export default  defineComponent({
 
         await alert.present();
       };
+    const flyingAlert = async () => {
+      const alert = await alertController.create({
+        header: 'Alert',
+        subHeader: 'You cannot disconnect while flying',
+        buttons: ['OK'],
+      });
+
+      await alert.present();
+    };
     let mode = ref(undefined);
     let player = ref(undefined);
     let sector = ref([]);
     let waitingConnection = ref(true);
     let dronePosition = ref([]);
     let yourTurn = ref(false);
-    let playerColor = ref('red');
+    let playerColor = ref('red');     
+    
 
     onMounted(() => {  
-      mode.value = route.params.mode;
       if(mode.value == "controllers"){
-        player.value = route.params.player;
-        mqttHook.subscribe("dashboardControllers/mobileApp/"+player.value+"/#", 1)
-        console.log(player.value)
+        mqttHook.subscribe("dashboardControllers/mobileApp/#", 1)
       }      
       else{
         mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
@@ -187,7 +199,7 @@ export default  defineComponent({
         } 
       })
 
-      mqttHook.registerEvent("dashboardControllers/mobileApp/"+player.value+"/#", (topic, message) => {
+      mqttHook.registerEvent("dashboardControllers/mobileApp/#", (topic, message) => {
         if(topic=="dashboardControllers/mobileApp/"+player.value+"/sector"){
           waitingConnection.value = false;
           let sectorJSON = JSON.parse(message); 
@@ -196,7 +208,40 @@ export default  defineComponent({
           playerColor.value = sectorJSON.color.toString();
           mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
           mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
-        }        
+        }  
+        else if(topic == "dashboardControllers/mobileApp/disconnect"){
+          mqttHook.unSubscribe("autopilotService/mobileApp/#", error => {
+          if (error) {
+            console.log('Unsubscribe error', error)
+          }
+        })
+        waitingConnection.value = true;
+        sector.value = [];
+        player.value = undefined;
+        mode.value = undefined;
+        dronePosition.value = [];
+        yourTurn.value = false;
+        playerColor.value = 'red';
+        state.value = 'connected';
+        armed.value = false;
+        flying.value = false;
+        connected.value = false;
+        altitude.value = undefined;
+        groundSpeed.value = undefined;
+        heading.value = undefined;
+        battery.value = undefined;
+        direction.value = undefined;
+        router.push('/')
+        }     
+      })
+
+      emitter.on('disconnect', (data)=> {
+        if(state.value == 'connected' || state.value == 'onHearth' || state.value == 'disarmed'){          
+          mqttHook.publish("mobileApp/dashboardControllers/disconnect",'');
+        }
+        else{
+          flyingAlert();
+        }
       })
     
     })
@@ -238,25 +283,41 @@ export default  defineComponent({
     }
 
     function setSector(sectorJSON){
+      console.log(sectorJSON);
       for(let j = 0; j<sectorJSON.length; j++){
         let waypoints = [];
         for(let i = 0; i<sectorJSON[j].length; i++){
           waypoints.push([sectorJSON[j][i].lat, sectorJSON[j][i].long]);
         }
-        waypoints.push([sectorJSON[j][0].lat, sectorJSON[j][0].long]);
+        waypoints.push([sectorJSON[j][0].lat, sectorJSON[j][0].long])
         sector.value.push(waypoints); 
-      }      
+      }  
+      console.log(sector)    
     }
 
     function droneInSector(){
       if(mode.value=="controllers"){
-        return turf.booleanPointInPolygon(turf.point(dronePosition.value), turf.polygon(sector.value));
+        let droneInSectorBoolean = false;        
+        if(playerColor.value == 'yellow'){
+          if(turf.booleanPointInPolygon(turf.point(dronePosition.value), turf.polygon(sector.value))){
+            droneInSectorBoolean = true;
+          }
+        }
+        else{
+          for(let i = 0; i<sector.value.length; i++){
+            console.log(sector.value[i]);
+            if(turf.booleanPointInPolygon(turf.point(dronePosition.value), turf.polygon([sector.value[i]]))){
+              droneInSectorBoolean = true;
+            }
+          }
+        }        
+        return droneInSectorBoolean;
       }
       else{
         return true;
       }
       
-    }
+    }    
 
     return {
       takeOff,
@@ -280,7 +341,8 @@ export default  defineComponent({
       mode,
       waitingConnection,
       yourTurn,
-      playerColor
+      playerColor,
+      flyingAlert
     }
   }
 });

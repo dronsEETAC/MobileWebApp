@@ -18,7 +18,7 @@
           <ion-label>LEDs</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="DisconectTab" href='/'>
+        <ion-tab-button @click="disconnect" tab="DisconectTab">
           <ion-icon :icon="exitOutline" />
           <ion-label>Disconnect</ion-label>
         </ion-tab-button>
@@ -28,10 +28,10 @@
 </template>
 
 <script>
-import { defineComponent, ref } from 'vue';
+import { defineComponent, ref, inject } from 'vue';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import { airplaneOutline, cameraOutline, exitOutline, sunny } from 'ionicons/icons';
-//import { useMQTT } from 'mqtt-vue-hook' 
+import { useMQTT } from 'mqtt-vue-hook' 
 import { useRoute } from 'vue-router'
 
 export default defineComponent({
@@ -42,10 +42,16 @@ export default defineComponent({
     const route = useRoute();
     let mode = ref(route.params.mode);
     let newRouteAutopilot = ref("/tabs/autopilot/")
+    const mqttHook = useMQTT();
+    let emitter = inject("emitter");
 
     newRouteAutopilot.value = newRouteAutopilot.value + mode.value; 
     if(mode.value=="controllers"){
       newRouteAutopilot.value = newRouteAutopilot.value + '/' + route.params.player
+    }
+
+    function disconnect(){      
+      emitter.emit('disconnect','');
     }
     
     
@@ -55,7 +61,8 @@ export default defineComponent({
       airplaneOutline,
       exitOutline,
       state,
-      newRouteAutopilot
+      newRouteAutopilot,
+      disconnect
     }
   }
 });

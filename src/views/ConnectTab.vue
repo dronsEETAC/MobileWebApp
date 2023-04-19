@@ -34,7 +34,7 @@
 </template>
   
 <script>
-  import { defineComponent, onMounted, ref } from 'vue';
+  import { defineComponent, onMounted, ref, provide } from 'vue';
   import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonLabel, IonInput, IonList, IonItem, IonAlert } from '@ionic/vue';
   import { useMQTT } from 'mqtt-vue-hook'
   import { useRouter } from 'vue-router'
@@ -62,11 +62,14 @@
       function sendUsername(){
         if(username.value!=undefined){
           mqttHook.subscribe("mobileApp/dashboardControllers/"+username.value+"/create")
-          mqttHook.publish("mobileApp/dashboardControllers/username", username.value, 1)          
+          mqttHook.publish("mobileApp/dashboardControllers/username", username.value, 1)
         }        
       }
 
-      onMounted(() => {        
+      onMounted(() => {       
+        controllersApp.value = false;
+        username.value = undefined;
+        isOpen.value = false;
         mqttHook.registerEvent("+/dashboardControllers/#", (topic, message)=>{
           if(topic=='mobileApp/dashboardControllers/'+username.value+'/create'){
             if(message=="ok"){
