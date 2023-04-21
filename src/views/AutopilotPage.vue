@@ -119,6 +119,9 @@ export default  defineComponent({
   ionViewDidEnter(){
     this.player = this.$route.params.player;
     this.mode = this.$route.params.mode;
+    if(this.mode == "individual"){
+      this.waitingConnection = false;
+    }
   },
   setup() {
 
@@ -168,7 +171,8 @@ export default  defineComponent({
         mqttHook.subscribe("dashboardControllers/mobileApp/#", 1)
       }      
       else{
-        mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
+        mqttHook.subscribe("autopilotService/mobileApp/#", 1)
+        mqttHook.publish("mobileApp/autopilotService/connect", "", 1);         
       }                  
 
       mqttHook.registerEvent('autopilotService/mobileApp/#', (topic, message) => {
@@ -211,37 +215,28 @@ export default  defineComponent({
         }  
         else if(topic == "dashboardControllers/mobileApp/disconnect"){
           mqttHook.unSubscribe("autopilotService/mobileApp/#", error => {
-          if (error) {
-            console.log('Unsubscribe error', error)
-          }
-        })
-        waitingConnection.value = true;
-        sector.value = [];
-        player.value = undefined;
-        mode.value = undefined;
-        dronePosition.value = [];
-        yourTurn.value = false;
-        playerColor.value = 'red';
-        state.value = 'connected';
-        armed.value = false;
-        flying.value = false;
-        connected.value = false;
-        altitude.value = undefined;
-        groundSpeed.value = undefined;
-        heading.value = undefined;
-        battery.value = undefined;
-        direction.value = undefined;
-        router.push('/')
+            if (error) {
+              console.log('Unsubscribe error', error)
+            }
+          })
+          waitingConnection.value = true;
+          sector.value = [];
+          player.value = undefined;
+          mode.value = undefined;
+          dronePosition.value = [];
+          yourTurn.value = false;
+          playerColor.value = 'red';
+          state.value = 'connected';
+          armed.value = false;
+          flying.value = false;
+          connected.value = false;
+          altitude.value = undefined;
+          groundSpeed.value = undefined;
+          heading.value = undefined;
+          battery.value = undefined;
+          direction.value = undefined;
+          router.push('/')
         }     
-      })
-
-      emitter.on('disconnect', (data)=> {
-        if(state.value == 'connected' || state.value == 'onHearth' || state.value == 'disarmed'){          
-          mqttHook.publish("mobileApp/dashboardControllers/disconnect",'');
-        }
-        else{
-          flyingAlert();
-        }
       })
     
     })
