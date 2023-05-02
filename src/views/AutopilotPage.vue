@@ -160,19 +160,15 @@ export default  defineComponent({
     let waitingConnection = ref(true);
     let dronePosition = ref([]);
     let yourTurn = ref(false);
-    let playerColor = ref('red');     
+    let playerColor = ref('red');   
+    let scenarioPredetermined = 'false';  
     
 
-    onMounted(() => {  
-      if(mode.value == "controllers"){
-        mqttHook.subscribe("dashboardControllers/mobileApp/#", 1)
-      }      
-      else{
-        mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
-      }                  
+    onMounted(() => {                        
 
       mqttHook.registerEvent('autopilotService/mobileApp/#', (topic, message) => {
         if(topic=="autopilotService/mobileApp/telemetryInfo"){
+          waitingConnection = false;
           const data = JSON.parse(message)
           console.log ('telem ', data)
           state.value = data['state']
@@ -206,32 +202,41 @@ export default  defineComponent({
           console.log(sectorJSON);
           setSector(sectorJSON.sector);
           playerColor.value = sectorJSON.color.toString();
+          scenarioPredetermined = sectorJSON.scenario;
           mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
           mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
         }  
         else if(topic == "dashboardControllers/mobileApp/disconnect"){
           mqttHook.unSubscribe("autopilotService/mobileApp/#", error => {
-          if (error) {
-            console.log('Unsubscribe error', error)
+            if (error) {
+              console.log('Unsubscribe error', error)
+            }
+          })
+          if(mode.value == 'controllers'){
+            mqttHook.unSubscribe("dashboardControllers/mobileApp/#", error => {
+              if (error) {
+                console.log('Unsubscribe error', error)
+              }
+            })
           }
-        })
-        waitingConnection.value = true;
-        sector.value = [];
-        player.value = undefined;
-        mode.value = undefined;
-        dronePosition.value = [];
-        yourTurn.value = false;
-        playerColor.value = 'red';
-        state.value = 'connected';
-        armed.value = false;
-        flying.value = false;
-        connected.value = false;
-        altitude.value = undefined;
-        groundSpeed.value = undefined;
-        heading.value = undefined;
-        battery.value = undefined;
-        direction.value = undefined;
-        router.push('/')
+          waitingConnection.value = true;
+          sector.value = [];
+          player.value = undefined;
+          mode.value = undefined;
+          dronePosition.value = [];
+          yourTurn.value = false;
+          playerColor.value = 'red';
+          state.value = 'connected';
+          armed.value = false;
+          flying.value = false;
+          connected.value = false;
+          altitude.value = undefined;
+          groundSpeed.value = undefined;
+          heading.value = undefined;
+          battery.value = undefined;
+          direction.value = undefined;
+          scenarioPredetermined = false;
+          router.push('/')
         }     
       })
 
@@ -283,7 +288,6 @@ export default  defineComponent({
     }
 
     function setSector(sectorJSON){
-      console.log(sectorJSON);
       for(let j = 0; j<sectorJSON.length; j++){
         let waypoints = [];
         for(let i = 0; i<sectorJSON[j].length; i++){
@@ -298,7 +302,7 @@ export default  defineComponent({
     function droneInSector(){
       if(mode.value=="controllers"){
         let droneInSectorBoolean = false;        
-        if(playerColor.value == 'yellow'){
+        if(playerColor.value == 'yellow' && scenarioPredetermined == 'false'){
           if(turf.booleanPointInPolygon(turf.point(dronePosition.value), turf.polygon(sector.value))){
             droneInSectorBoolean = true;
           }

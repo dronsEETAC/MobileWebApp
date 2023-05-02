@@ -57,13 +57,18 @@
       
       function connect() {
         mqttHook.publish("mobileApp/autopilotService/connect", "", 1)
+        mqttHook.subscribe("autopilotService/mobileApp/#", 1)   
       } 
 
       function sendUsername(){
         if(username.value!=undefined){
-          mqttHook.subscribe("mobileApp/dashboardControllers/"+username.value+"/create")
           mqttHook.publish("mobileApp/dashboardControllers/username", username.value, 1)
         }        
+      }
+
+      function connectControllers(){
+        mqttHook.subscribe("dashboardControllers/mobileApp/#", 1)
+        mqttHook.subscribe("autopilotService/mobileApp/#", 1)   
       }
 
       onMounted(() => {       
@@ -71,8 +76,9 @@
         username.value = undefined;
         isOpen.value = false;
         mqttHook.registerEvent("+/dashboardControllers/#", (topic, message)=>{
-          if(topic=='mobileApp/dashboardControllers/'+username.value+'/create'){
+          if(topic=='dashboardControllers/mobileApp/'+username.value+'/create'){
             if(message=="ok"){
+              controllersApp.value = false;            
               router.push("/tabs/autopilot/controllers/"+username.value)
             }
             else{
