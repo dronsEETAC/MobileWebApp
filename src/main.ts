@@ -42,8 +42,8 @@ app.use(router)
 app.provide('emitter', emitter);
 
 //app.use(mqttVueHook, 'mqtt://10.10.10.1:8000', {
-app.use(mqttVueHook, 'ws://broker.hivemq.com:8000/mqtt', {
-//app.use(mqttVueHook, 'mqtt://localhost:8000', {
+app.use(mqttVueHook, 'wss://broker.hivemq.com:8884/mqtt', {
+//app.use(mqttVueHook, 'mqtts://localhost:8001', { //8001 and mqtts for secure connections
   clean: false,
   keepalive: 60,
   clientId: `MobileApp_${Math.random().toString(16).substring(2, 10)}`,
