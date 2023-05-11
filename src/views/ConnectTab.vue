@@ -7,7 +7,7 @@
       </ion-header>
       <ion-content :fullscreen="true" v-if="!controllersApp">
         <ion-button @click="connect" class="connectButton" href = "/tabs/autopilot/individual">Individual</ion-button>
-        <ion-button @click="controllersApp=true" class="connectButton">Controller Game</ion-button>
+        <ion-button @click="connectControllers" class="connectButton">Controller Game</ion-button>
       </ion-content>
       <ion-content :fullscreen="true" v-if="controllersApp"  >
         <ion-label style="display: flex; justify-content: center; margin-top: 15%; font-size: 30px;">Who are you?</ion-label>
@@ -66,16 +66,15 @@
         }        
       }
 
-      function connectControllers(){
-        mqttHook.subscribe("dashboardControllers/mobileApp/#", 1)
-        mqttHook.subscribe("autopilotService/mobileApp/#", 1)   
+      function connectControllers(){        
+        mqttHook.subscribe("dashboardControllers/mobileApp/#", 1);
+        controllersApp.value=true;
       }
 
       onMounted(() => {       
         controllersApp.value = false;
-        username.value = undefined;
         isOpen.value = false;
-        mqttHook.registerEvent("+/dashboardControllers/#", (topic, message)=>{
+        mqttHook.registerEvent("+/mobileApp/#", (topic, message)=>{
           if(topic=='dashboardControllers/mobileApp/'+username.value+'/create'){
             if(message=="ok"){
               controllersApp.value = false;            
@@ -96,7 +95,8 @@
         sendUsername,
         isOpen,
         alertButtons,
-        setOpen
+        setOpen,
+        connectControllers
       }
     }
   })
