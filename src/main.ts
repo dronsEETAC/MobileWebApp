@@ -40,14 +40,14 @@ app.use(router)
 
 app.provide('emitter', emitter);
 
-app.use(mqttVueHook, 'mqtts://10.10.10.1:8001', {
+//app.use(mqttVueHook, 'mqtts://10.10.10.1:8001', {
 //app.use(mqttVueHook, 'wss://broker.hivemq.com:8884/mqtt', {
-//app.use(mqttVueHook, 'mqtts://localhost:8001', { //8001 and mqtts for secure connections
+app.use(mqttVueHook, 'mqtts://192.168.237.35:8001', { //8001 and mqtts for secure connections
   clean: false,
   keepalive: 60,
   clientId: `MobileApp_${Math.random().toString(16).substring(2, 10)}`,
   connectTimeout: 4000,
-  ca: process.env.mosquittoCA,
+  rejectUnauthorized: false
 })
 
 
