@@ -17,14 +17,18 @@
         </div>   
         <div v-if="yourTurn && mode=='controllers'" class="yourTurnAlarm" :style="{backgroundColor: playerColor}">
           <ion-label style="display: flex; justify-content: center; font-size: 20px; margin-top: 5%; color: white">It's your turn!</ion-label>
-        </div>     
-      <ion-button v-if = "state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone" :disabled="!yourTurn">Arm drone</ion-button>
-      <ion-button v-if = "state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
-      <ion-button v-if = "armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
+        </div> 
+      <div v-if="!practising && connected">
+        <ion-button v-if = "state != 'arming' && state != 'takingOff'  && !flying && !armed" class="autopilotButton" color="tertiary" @click="armDrone" :disabled="!yourTurn">Arm drone</ion-button>
+        <ion-button v-if = "state == 'arming'" class="autopilotButton" :disabled = "true" color="secondary">Arming...</ion-button>
+        <ion-button v-if = "armed" class="autopilotButton" :disabled = "true" color="primary">Armed</ion-button>
 
-      <ion-button  v-if = "state != 'takingOff' && !flying" class="autopilotButton" :disabled = "!armed || !yourTurn" color="tertiary" @click="takeOff">Take off</ion-button>
-      <ion-button  v-if = "state == 'takingOff'" class="autopilotButton" :disabled = "true" color="secondary" >Taking off ...</ion-button>
-      <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button>
+        <ion-button  v-if = "state != 'takingOff' && !flying" class="autopilotButton" :disabled = "!armed || !yourTurn" color="tertiary" @click="takeOff">Take off</ion-button>
+        <ion-button  v-if = "state == 'takingOff'" class="autopilotButton" :disabled = "true" color="secondary" >Taking off ...</ion-button>
+        <ion-button  v-if = "flying" class="autopilotButton" :disabled = "true" color="primary" >Flying</ion-button>
+      </div> 
+      <ion-button v-if="practising" class="autopilotButton" color="tertiary">Practising...</ion-button> 
+      <ion-button v-if="!practising && !connected" class="autopilotButton" color="tertiary">Connecting to Autopilot...</ion-button>           
 
       <div class="direction">
         <div v-if = "direction != 'NorthWest'" id="NorthWest" v-on:click="go($event)" class="box">NW</div>
@@ -154,6 +158,16 @@ export default  defineComponent({
 
       await alert.present();
     };
+    const practisingAlert = async () => {
+      const alert = await alertController.create({
+        header: 'Alert',
+        subHeader: 'You will start practising now',
+        buttons: ['OK'],
+      });
+
+      await alert.present();
+    };
+
     let mode = ref(undefined);
     let player = ref(undefined);
     let sector = ref([]);
@@ -163,6 +177,7 @@ export default  defineComponent({
     let playerColor = ref('red');   
     let scenarioPredetermined = 'false'; 
     let lastPlayer = "false"; 
+    let practising = ref(false);
     
 
     onMounted(() => {        
@@ -175,7 +190,7 @@ export default  defineComponent({
 
       mqttHook.registerEvent("+/mobileApp/#", (topic, message) => {
         console.log(topic)
-        if(topic=="dashboardControllers/mobileApp/"+player.value+"/sector"){
+        if(topic=="dashboardControllers/mobileApp/"+player.value+"/startPractice"){
           waitingConnection.value = false;
           let sectorJSON = JSON.parse(message); 
           console.log(sectorJSON);
@@ -183,10 +198,30 @@ export default  defineComponent({
           playerColor.value = sectorJSON.color.toString();
           scenarioPredetermined = sectorJSON.scenario;
           lastPlayer = sectorJSON.last;
-          mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
-          mqttHook.subscribe("autopilotService/mobileApp/#", 1)  
+          dronePosition.value = sectorJSON.dronePosition;
+          state.value = 'practice';
+          practisingAlert();
+          practising.value = true;         
         }  
+        else if(topic == "dashboardControllers/mobileApp/position"){
+          const data = JSON.parse(message);
+          dronePosition.value = [data['lat'], data['lon']];
+          yourTurn.value = droneInSector();
+          console.log(data);
+        }        
+        else if(topic == "dashboardControllers/mobileApp/finishPractice"){
+          practising.value = false;
+          yourTurn.value = false;          
+        }
+        else if(topic == 'dashboardControllers/mobileApp/startFlying'){
+          mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
+          mqttHook.subscribe("autopilotService/mobileApp/#", 1)
+        }
         else if(topic=="autopilotService/mobileApp/telemetryInfo"){
+          if(connected.value == false){
+            connected.value = true;
+            state.value = 'connected'
+          }          
           waitingConnection.value = false;
           const data = JSON.parse(message)
           console.log ('telem ', data)
@@ -258,22 +293,27 @@ export default  defineComponent({
     })
   
 
-    function go (event) {
-      if (!flying.value){
-        presentAlert()
-      } else {
+    function go (event) {      
+      if(state.value == 'practice'){
         if(yourTurn.value){
           let dir = event.currentTarget.id;
+          console.log(dir);
           direction.value = dir
-          mqttHook.publish("mobileApp/autopilotService/go", dir, 1);
-        }        
-      }
-    }
-    function connect() {
-      state.value = 'connecting'
-      mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
-      connect.value = true;
-      state.value = 'connected'
+          mqttHook.publish("mobileApp/dashboardControllers/direction", dir, 1);
+        }          
+      } 
+      else{
+        if (!flying.value){
+          presentAlert()
+        } else {
+          if(yourTurn.value){
+            let dir = event.currentTarget.id;
+            direction.value = dir
+            mqttHook.publish("mobileApp/autopilotService/go", dir, 1);
+          }      
+        }
+      } 
+      
     }
     function armDrone() {
       state.value = 'arming';
@@ -281,7 +321,6 @@ export default  defineComponent({
     }
 
     function disarmDrone() {
-      connected.value = false
       mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
     }
 
@@ -343,7 +382,6 @@ export default  defineComponent({
       state,
       heading,
       battery,
-      connect,
       presentAlert,
       direction,
       player,
@@ -351,7 +389,9 @@ export default  defineComponent({
       waitingConnection,
       yourTurn,
       playerColor,
-      flyingAlert
+      flyingAlert,
+      practisingAlert,
+      practising
     }
   }
 });
