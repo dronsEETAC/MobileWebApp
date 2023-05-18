@@ -69,7 +69,8 @@
 
       </div>
 
-      <ion-button class="autopilotButton" :disabled = "!flying || state == 'returningHome' || !yourTurn" color="tertiary">Drop</ion-button>
+      <ion-button v-if="dropButtonShowing" class="autopilotButton" :disabled = "state!='flying' && state!='practice' || !yourTurn" color="tertiary" @click="drop">Drop</ion-button>
+      <ion-button v-if="!dropButtonShowing" class="autopilotButton" color="secondary" >Dropped</ion-button>
       <ion-button  v-if = "state != 'returningHome' && state != 'onHearth'"  class="autopilotButton" :disabled = "!flying || !yourTurn" color="tertiary" @click="returnToLaunch">Return to launch</ion-button>
       <ion-button v-if = "state == 'returningHome'"  class="autopilotButton" :disabled = "true" color="secondary">Returning ...</ion-button>
       <ion-button v-if = "state == 'onHearth'"  class="autopilotButton" :disabled = "true" color="primary">On hearth</ion-button>
@@ -178,6 +179,7 @@ export default  defineComponent({
     let scenarioPredetermined = 'false'; 
     let lastPlayer = "false"; 
     let practising = ref(false);
+    let dropButtonShowing = ref(true);
     
 
     onMounted(() => {        
@@ -216,6 +218,10 @@ export default  defineComponent({
         else if(topic == 'dashboardControllers/mobileApp/startFlying'){
           mqttHook.publish("mobileApp/autopilotService/connect", "", 1);
           mqttHook.subscribe("autopilotService/mobileApp/#", 1)
+          dropButtonShowing.value = true;
+        }
+        else if(topic == "dashboardControllers/mobileApp/drop"){
+          dropButtonShowing.value = false;
         }
         else if(topic=="autopilotService/mobileApp/telemetryInfo"){
           if(connected.value == false){
@@ -365,7 +371,25 @@ export default  defineComponent({
         return true;
       }
       
-    }    
+    }  
+    
+    function drop(){
+      if(state.value == 'practice'){
+        if(yourTurn.value){          
+          mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+        }          
+      } 
+      else{
+        if (!flying.value){
+          presentAlert()
+        } else {
+          if(yourTurn.value){
+            mqttHook.publish("mobileApp/autopilotService/drop", '', 1);
+            mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+          }      
+        }
+      } 
+    }
 
     return {
       takeOff,
@@ -391,7 +415,9 @@ export default  defineComponent({
       playerColor,
       flyingAlert,
       practisingAlert,
-      practising
+      practising,
+      drop,
+      dropButtonShowing
     }
   }
 });
