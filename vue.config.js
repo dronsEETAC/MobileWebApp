@@ -3,7 +3,7 @@ const fs = require('fs')
 const mosquittoCA = fs.readFileSync('./rootCA.crt');
 
 module.exports = {
-    devServer: {
+    /* devServer: {
       https: {
         key: fs.readFileSync('./localhost.key'),
         cert: fs.readFileSync('./localhost.crt'),
@@ -20,7 +20,7 @@ module.exports = {
         };
         return args;
       });
-    }
+    } */
 
     /* configureWebpack: config => {
       return {
