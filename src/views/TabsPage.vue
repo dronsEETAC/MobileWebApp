@@ -18,6 +18,11 @@
           <ion-label>LEDs</ion-label>
         </ion-tab-button>
 
+        <ion-tab-button tab="SpeechTab" href='/tabs/speech'>
+          <ion-icon :icon="micOutline" />
+          <ion-label>Speech</ion-label>
+        </ion-tab-button>
+
         <ion-tab-button @click="disconnect" tab="DisconectTab">
           <ion-icon :icon="exitOutline" />
           <ion-label>Disconnect</ion-label>
@@ -30,7 +35,7 @@
 <script>
 import { defineComponent, ref, inject } from 'vue';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { airplaneOutline, cameraOutline, exitOutline, sunny } from 'ionicons/icons';
+import { airplaneOutline, cameraOutline, exitOutline, sunny, micOutline } from 'ionicons/icons';
 import { useMQTT } from 'mqtt-vue-hook' 
 import { useRoute } from 'vue-router'
 
@@ -62,7 +67,8 @@ export default defineComponent({
       exitOutline,
       state,
       newRouteAutopilot,
-      disconnect
+      disconnect,
+      micOutline
     }
   }
 });
