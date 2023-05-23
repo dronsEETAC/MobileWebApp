@@ -18,25 +18,31 @@
           </ion-item>
         </ion-col>
       </ion-row>
+      <ion-button class="startStopSequenceButton" style="height: 10%" @click="getPosition">Get position</ion-button>
+      <ion-item style = "font-size: 20px; ">
+          <ion-label >Position</ion-label>
+          {{position}}
+      </ion-item>
     </ion-content>
   </ion-page>
 </template>
 
 <script>
 import { defineComponent, ref } from 'vue';
-import { IonPage, IonHeader, IonToolbar, IonContent, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle } from '@ionic/vue';
+import { IonPage, IonHeader, IonToolbar, IonContent, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle, IonLabel } from '@ionic/vue';
 import { useMQTT } from 'mqtt-vue-hook'
 
 export default  defineComponent({
   name: 'LEDsPage',
   components: { 
-    IonHeader, IonToolbar, IonContent, IonPage, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle 
+    IonHeader, IonToolbar, IonContent, IonPage, IonButton, IonInput, IonRow, IonCol, IonItem, IonTitle, IonLabel 
   },
 
   setup() {
     let seconds = ref("");
     let connected = ref(true);
     const mqttHook = useMQTT();
+    let position = ref(100);
 
     function startLedSequence(){
       connected.value = false
@@ -52,12 +58,30 @@ export default  defineComponent({
       mqttHook.publish("mobileApp/LEDsService/stopLEDsSequence", "", 1)
     }
 
+    function getPosition(){
+      if("geolocation" in navigator) {
+        console.log ('vamos')
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            console.log ('tengo ', pos)
+            position.value = pos.coords.latitude;
+          },
+          err => {
+          console.log ('error: ' + err.message);
+          })
+      } else {
+        console.log ('no hay geolocation')
+      }
+    }
+
     return {
         startLedSequence,
         startNsecondsLedSequence,
         stopLedSequence,
         connected,
-        seconds
+        seconds,
+        getPosition,
+        position
     };
   },
 });

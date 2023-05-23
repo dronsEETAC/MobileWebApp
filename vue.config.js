@@ -9,7 +9,18 @@ module.exports = {
         cert: fs.readFileSync('./localhost.crt'),
         ca: fs.readFileSync('./rootCA.crt'),
       }
-    }, */
+    },
+
+    chainWebpack: config => {
+      config.plugin("define").tap(args => {
+        let _base = args[0]["process.env"];
+        args[0]["process.env"] = {
+          ..._base,
+          "rootCA": mosquittoCA,
+        };
+        return args;
+      });
+    } */
 
     /* configureWebpack: config => {
       return {

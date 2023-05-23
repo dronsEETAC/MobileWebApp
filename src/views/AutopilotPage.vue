@@ -124,6 +124,9 @@ export default  defineComponent({
   ionViewDidEnter(){
     this.player = this.$route.params.player;
     this.mode = this.$route.params.mode;
+    if(this.mode == "individual"){
+      this.waitingConnection = false;
+    }
   },
   setup() {
 
@@ -189,7 +192,7 @@ export default  defineComponent({
       if(mode.value=='individual'){
         mqttHook.subscribe("autopilotService/mobileApp/#", 1)
       }
-
+      
       mqttHook.registerEvent("+/mobileApp/#", (topic, message) => {
         console.log(topic)
         if(topic=="dashboardControllers/mobileApp/"+player.value+"/startPractice"){
@@ -265,7 +268,7 @@ export default  defineComponent({
                 console.log('Unsubscribe error', error)
               }
             })
-          } */          
+          } */  
           waitingConnection.value = true;
           sector.value = [];
           player.value = undefined;
@@ -285,15 +288,6 @@ export default  defineComponent({
           scenarioPredetermined = false;
           router.push('/')
         }     
-      })
-
-      emitter.on('disconnect', (data)=> {
-        if(state.value == 'connected' || state.value == 'onHearth' || state.value == 'disarmed'){          
-          mqttHook.publish("mobileApp/dashboardControllers/disconnect",'');
-        }
-        else{
-          flyingAlert();
-        }
       })
     
     })

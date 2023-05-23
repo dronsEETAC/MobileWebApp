@@ -37,7 +37,7 @@ import { defineComponent, ref, inject } from 'vue';
 import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import { airplaneOutline, cameraOutline, exitOutline, sunny, micOutline } from 'ionicons/icons';
 import { useMQTT } from 'mqtt-vue-hook' 
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 
 export default defineComponent({
   name: 'TabsPage',
@@ -45,19 +45,50 @@ export default defineComponent({
   setup() {
     let state = ref("disconnected");
     const route = useRoute();
+    const router = useRouter();
     let mode = ref(route.params.mode);
     let newRouteAutopilot = ref("/tabs/autopilot/")
     const mqttHook = useMQTT();
     let emitter = inject("emitter");
+    const flyingAlert = async () => {
+      const alert = await alertController.create({
+        header: 'Alert',
+        subHeader: 'You cannot disconnect while flying',
+        buttons: ['OK'],
+      });
+
+      await alert.present();
+    };    
 
     newRouteAutopilot.value = newRouteAutopilot.value + mode.value; 
+
     if(mode.value=="controllers"){
       newRouteAutopilot.value = newRouteAutopilot.value + '/' + route.params.player
     }
 
-    function disconnect(){      
-      emitter.emit('disconnect','');
+    function disconnect(){            
+      if(state.value == 'connected' || state.value == 'onHearth' || state.value == 'disarmed'){ 
+        if(mode.value == "controllers"){
+          mqttHook.publish("mobileApp/dashboardControllers/disconnect",'');
+        } 
+        else{
+          mqttHook.publish("mobileApp/autopilotService/disconnect", "");
+          router.push('/');
+        }       
+      }
+      else{
+        flyingAlert();
+      }
     }
+
+    onMounted(() => {
+      mqttHook.registerEvent('autopilotService/mobileApp/#', (topic, message) => {
+        if(topic=="autopilotService/mobileApp/telemetryInfo"){
+          const data = JSON.parse(message)
+          state.value = data['state'];
+        }
+      })
+    })
     
     
     return {
