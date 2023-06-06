@@ -33,8 +33,8 @@
 </template>
 
 <script>
-import { defineComponent, ref, inject } from 'vue';
-import { IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
+import { defineComponent, ref, inject, onMounted } from 'vue';
+import { alertController, IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
 import { airplaneOutline, cameraOutline, exitOutline, sunny, micOutline } from 'ionicons/icons';
 import { useMQTT } from 'mqtt-vue-hook' 
 import { useRoute, useRouter } from 'vue-router'
