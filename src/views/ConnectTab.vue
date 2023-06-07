@@ -5,11 +5,12 @@
           <ion-title class="ion-text-center">Drone Engineering Ecosystem</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-content :fullscreen="true" v-if="!controllersApp">
+      <ion-content :fullscreen="true" v-if="!controllersApp && !followmeApp">
         <ion-button @click="connect" class="connectButton" href = "/tabs/autopilot/individual">Individual</ion-button>
         <ion-button @click="connectControllers" class="connectButton">Controller Game</ion-button>
+        <ion-button @click="connectFollowMe" class="connectButton">Follow Me Game</ion-button>
       </ion-content>
-      <ion-content :fullscreen="true" v-if="controllersApp"  >
+      <ion-content :fullscreen="true" v-if="controllersApp || followmeApp"  >
         <ion-label style="display: flex; justify-content: center; margin-top: 15%; font-size: 30px;">Who are you?</ion-label>
         <ion-list class="ion-text-center">
           <div style="display: flex; justify-content: center; margin-top: 10%;">
@@ -47,6 +48,7 @@
       const mqttHook = useMQTT();
       const router = useRouter();
       let controllersApp = ref(false);
+      let followmeApp = ref(false);
       let username = ref(undefined);
       let isOpen = ref(false);
       const alertButtons = ['OK'];
@@ -62,13 +64,23 @@
 
       function sendUsername(){
         if(username.value!=undefined){
-          mqttHook.publish("mobileApp/dashboardControllers/username", username.value, 1)
+          if(controllersApp.value){
+            mqttHook.publish("mobileApp/dashboardControllers/username", username.value, 1)
+          }
+          else{
+            mqttHook.publish("mobileApp/dashboardFollowme/username", username.value, 1)
+          }
         }        
       }
 
       function connectControllers(){        
         mqttHook.subscribe("dashboardControllers/mobileApp/#", 1);
         controllersApp.value=true;
+      }
+
+      function connectFollowMe(){        
+        mqttHook.subscribe("dashboardFollowme/mobileApp/#", 1);
+        followmeApp.value = true
       }
 
       onMounted(() => {       
@@ -79,6 +91,15 @@
             if(message=="ok"){
               controllersApp.value = false;            
               router.push("/tabs/autopilot/controllers/"+username.value)
+            }
+            else{
+              isOpen.value = true;
+            }
+          }
+          if(topic=='dashboardFollowme/mobileApp/'+username.value+'/create'){
+            if(message=="ok"){
+              followmeApp.value = false;       
+              router.push('/followme/'+username.value)     
             }
             else{
               isOpen.value = true;
@@ -96,7 +117,9 @@
         isOpen,
         alertButtons,
         setOpen,
-        connectControllers
+        connectControllers,
+        connectFollowMe,
+        followmeApp
       }
     }
   })
@@ -106,7 +129,7 @@
 
 .connectButton {
   margin: 10%;
-  height: 40%;
+  height: 20%;
   width: 80%;
   white-space: normal;
   word-wrap: break-word;
