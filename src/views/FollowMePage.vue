@@ -1,42 +1,73 @@
 <template>
     <ion-page>
-      <ion-header>
+      <ion-header v-if="!photo">
         <ion-toolbar>
           <ion-title class="ion-text-center">Drone Engineering Ecosystem</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-content v-if="!yourTurn">
-        <ion-text>
-          <h2>Following:</h2>
-          <h2>{{ followingName }}</h2>
-        </ion-text>
-      </ion-content>
-      <ion-content v-if="yourTurn">
-        <ion-text style="text-align: center;">
-          <h2 style="margin-top:20px">Say a name:</h2>
-        </ion-text>
-        <ion-list>
+      <ion-grid class="ion-text-center" v-if="!yourTurn && !photo">
+        <ion-col>
+          <ion-row class="ion-padding-top">
+            <h2 style="font-size: 30px;">Following:</h2>
+          </ion-row>
+          <ion-row class="ion-padding-top">
+            <h2>{{ followingName }}</h2>
+          </ion-row> 
+        </ion-col>                 
+      </ion-grid>
+      <ion-content v-if="yourTurn && !photo" style="display: flex; justify-content: center;" class="ion-text-center" :fullscreen="true">
+        <ion-grid>
+          <ion-col>
+            <ion-row style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+              <ion-text>
+                <h2 style="font-size: xx-large">Say a name:</h2>
+              </ion-text>
+            </ion-row>
+          </ion-col>          
+        </ion-grid>        
+        <ion-list style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
           <ion-item v-for="(name,index) in players" :key="index">
-            <ion-label>{{ name }}</ion-label>
+            <ion-label style="font-size: 25px;">{{ name }}</ion-label>
           </ion-item>
-        </ion-list>
-        <ion-button color="tertiary" @click="speak">
-          <ion-icon slot="icon-only" :icon="micOutline"></ion-icon>
+        </ion-list>                      
+      </ion-content> 
+      <ion-content v-if="photo">
+        <ion-header>
+          <ion-toolbar>
+            <ion-title>Image</ion-title>
+            <ion-buttons slot="end">
+              <ion-button @click="setOpen(false)">Close</ion-button>
+            </ion-buttons>
+          </ion-toolbar>
+        </ion-header>
+        <ion-content>
+          <h2>Photo of player: {{ lastName }}</h2>
+          <div style="display:flex; justify-content: center;">
+            <div style ="display: flex; justify-content: center;">
+                <canvas style="width: 300px; height: 200px; border-style: solid;" id="output"></canvas>
+            </div>
+          </div>
+        </ion-content>
+      </ion-content>   
+      <ion-footer v-if="yourTurn && !photo" class="ion-text-center">
+        <ion-button shape="round" color="tertiary" @click="speak" style="margin-top: 5%; margin-bottom:5%; width: 100px; height: 100px; border-radius: 100px;" >
+          <ion-icon slot="icon-only" :icon="micOutline" style="font-size: 40px;"></ion-icon>
         </ion-button>
-      </ion-content>      
+      </ion-footer>       
     </ion-page>
 </template>
   
 <script>
   import { defineComponent, onMounted, ref, provide } from 'vue';
-  import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonText, IonLabel, IonList, IonItem, alertController, IonIcon, IonButton } from '@ionic/vue';
+  import { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonLabel, IonList, IonItem, alertController, IonIcon, IonButton, IonText, IonRow, IonGrid, IonCol, IonFooter, IonModal, IonButtons } from '@ionic/vue';
   import { micOutline } from 'ionicons/icons';
   import { useMQTT } from 'mqtt-vue-hook'
   import { useRouter, useRoute } from 'vue-router'
+  import * as cv from 'opencv.js'
   
   export default  defineComponent({
     name: 'FollowMePage',
-    components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonText, IonLabel, IonList, IonItem, IonIcon, IonButton },
+    components: { IonHeader, IonToolbar, IonTitle, IonContent, IonPage, IonLabel, IonList, IonItem, IonIcon, IonButton, IonRow, IonGrid, IonCol, IonText, IonFooter, IonButtons },
     ionViewDidEnter(){
       this.username = this.$route.params.player;
     },
@@ -47,9 +78,15 @@
       let followingName = ref('');
       let players = ref([])
       let username = ref(undefined);
-      let yourTurn = ref(false)
+      let yourTurn = ref(false);
       let interval;
       let listenning = false;
+      let photo = ref(false);
+      let canvasWidth = ref(window.innerWidth);
+      let canvasHeight = ref(window.innerHeight);
+      let myContext;
+      let myCanvas = ref(null)
+      let lastName = ref("")
 
       const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const sr = new Recognition();
@@ -79,9 +116,11 @@
         mqttHook.subscribe('+/mobileApp/#',1 )
         mqttHook.subscribe('autopilotService/dashboardFollowme/waypointReached')
         mqttHook.subscribe('mobileApp/dashboardFollowme/following')
+        mqttHook.subscribe('cameraService/dashboardFollowme/picture')
         mqttHook.publish('mobileApp/dashboardFollowme/sendList','')
 
-        sendCoordinates();
+        //sendCoordinates();
+        
 
         sr.continuous = true;
         sr.interimResults = true;
@@ -107,6 +146,7 @@
         };
 
         mqttHook.registerEvent("+/mobileApp/#", (topic, message)=>{
+          console.log(topic)
           if(topic=='dashboardFollowme/mobileApp/updateList'){
             let data = JSON.parse(message);
             players.value = data.players;
@@ -117,19 +157,29 @@
         })
 
         mqttHook.registerEvent("+/dashboardFollowme/#", (topic, message)=>{
-          console.log('received')
+          console.log(topic)
           if(topic=='mobileApp/dashboardFollowme/following'){
             followingName.value = message.toString();
             if(followingName.value == username.value){
               followingName.value = 'you!'
             }
             yourTurn.value = false
+            photo.value = false;
           }
           else if(topic=='autopilotService/dashboardFollowme/waypointReached'){
             if(followingName.value == 'you!'){
-              yourTurn.value = true;
-              yourTurnAlert()
+              yourTurn.value = true;              
             }
+          }
+          else if(topic == "cameraService/dashboardFollowme/picture"){ 
+            photo.value = true;           
+            const img = new Image();
+            img.src = "data:image/jpg;base64,"+message;
+            img.onload = () => {        
+              let dst = cv.imread(img);
+              cv.imshow ('output',dst);              
+            }
+            lastName.value = followingName.value;                        
           }
         })
         
@@ -144,35 +194,44 @@
         let p3wp = [[41.2762231,1.9882169],[41.2762170,1.9882290],[41.2762110,1.9882384],[41.2762019,1.9882558],[41.2761908,1.9882666],[41.2761858,1.9882827],[41.2761808,1.9882974],[41.2761727,1.9883202],[41.2761677,1.9883417],[41.2761626,1.9883537]]
         if("geolocation" in navigator) {
           console.log('geolocation')
+          const options = {
+            enableHighAccuracy: true,
+            timeout: 10000,
+            maximumAge: 0,
+          }
           interval = setInterval(() => {
-            /* navigator.geolocation.getCurrentPosition(
+            navigator.geolocation.getCurrentPosition(
               pos => {
-                position = [pos.coord.latitude,pos.coords.longitude]
+                position = [pos.coords.latitude,pos.coords.longitude]
+                console.log(position)
+                     
+                
               },err => {
-                console.log("error")}
-            ) */
+                console.log("error")
+              }, options
+            )
 
             //fem aixo per fer veure que tinc la posicio
-            if(username.value == 'joana'){
+            /* if(username.value == 'joana'){
               position = p1wp[a]
             }
-            else if(username.value == 'victor'){
+            else if(username.value == 'pepe'){
               position = p2wp[a]
             }
-            else if(username.value == 'mama'){
+            else if(username.value == 'maria'){
               position = p3wp[a]
             }
             a = a + 1;
             if(a == 10){
               a = 0;
-            }
+            }  */
 
             message = {
-              player: username.value,
-              position: position
-            }
-            console.log(position)
-            mqttHook.publish('mobileApp/dashboardFollowme/position', JSON.stringify(message));
+                  player: username.value,
+                  position: position
+                }
+                mqttHook.publish('mobileApp/dashboardFollowme/position', JSON.stringify(message)); 
+            
             
           }, 2000)
 
@@ -186,7 +245,7 @@
         console.log(t.toLowerCase())
 
         for(let i = 0; i < players.value.length; i++){
-          if (t.toLowerCase().trim().includes(players.value[i])) {
+          if (t.toLowerCase().trim().includes(players.value[i].toLowerCase())) {
             if(players.value[i] != username.value){
               mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[i])
               
@@ -207,9 +266,16 @@
         if(listenning == false){
           sr.start()
         }        
-       /*  mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
+        /* mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
         console.log(players.value[a])
         a = a - 1 */
+      }
+
+      function setOpen(open){
+        photo.value = open;
+        if(yourTurn.value == true){
+          yourTurnAlert()
+        }
       }
       
       return {
@@ -220,13 +286,19 @@
         yourTurnAlert,
         micOutline,
         speak,
-        sameNameAlert
+        sameNameAlert,
+        photo,
+        setOpen,
+        canvasHeight,
+        canvasWidth,
+        myCanvas,
+        myContext,
+        lastName
       }
     }
   })
 </script>
 
 <style>
-
 </style>
   
