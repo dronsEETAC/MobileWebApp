@@ -114,7 +114,6 @@
       onMounted(() => {       
         
         mqttHook.subscribe('+/mobileApp/#',1 )
-        mqttHook.subscribe('autopilotService/dashboardFollowme/waypointReached')
         mqttHook.subscribe('mobileApp/dashboardFollowme/following')
         mqttHook.subscribe('cameraService/dashboardFollowme/picture')
         mqttHook.publish('mobileApp/dashboardFollowme/sendList','')
@@ -166,11 +165,7 @@
             yourTurn.value = false
             photo.value = false;
           }
-          else if(topic=='autopilotService/dashboardFollowme/waypointReached'){
-            if(followingName.value == 'you!'){
-              yourTurn.value = true;              
-            }
-          }
+          
           else if(topic == "cameraService/dashboardFollowme/picture"){ 
             photo.value = true;           
             const img = new Image();
@@ -263,12 +258,12 @@
       let a = 1
 
       function speak(){
-        if(listenning == false){
+        /* if(listenning == false){
           sr.start()
-        }        
-        /* mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
+        }  */       
+        mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
         console.log(players.value[a])
-        a = a - 1 */
+        a = a - 1
       }
 
       function setOpen(open){

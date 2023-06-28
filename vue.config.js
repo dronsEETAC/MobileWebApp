@@ -11,7 +11,7 @@ module.exports = {
       }
     },
 
-   /*  chainWebpack: config => {
+    /*  chainWebpack: config => {
       config.plugin("define").tap(args => {
         let _base = args[0]["process.env"];
         args[0]["process.env"] = {
@@ -21,4 +21,11 @@ module.exports = {
         return args;
       });
     }  */
+
   }
+
+
+
+  
+
+     
