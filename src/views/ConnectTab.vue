@@ -90,7 +90,7 @@
           if(topic=='dashboardControllers/mobileApp/'+username.value+'/create'){
             if(message=="ok"){
               controllersApp.value = false;            
-              router.push("/tabs/autopilot/controllers/"+username.value)
+              router.push("/autopilot/controllers/"+username.value)
             }
             else{
               isOpen.value = true;

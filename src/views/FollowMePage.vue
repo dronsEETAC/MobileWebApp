@@ -88,6 +88,7 @@
       let myCanvas = ref(null)
       let lastName = ref("")
 
+
       const Recognition = window.SpeechRecognition || window.webkitSpeechRecognition;
       const sr = new Recognition();
       sr.lang = "es-US";
@@ -111,7 +112,7 @@
       };
             
 
-      onMounted(() => {       
+      onMounted(() => {  
         
         mqttHook.subscribe('+/mobileApp/#',1 )
         mqttHook.subscribe('mobileApp/dashboardFollowme/following')
@@ -242,8 +243,7 @@
         for(let i = 0; i < players.value.length; i++){
           if (t.toLowerCase().trim().includes(players.value[i].toLowerCase())) {
             if(players.value[i] != username.value){
-              mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[i])
-              
+              mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[i])                          
               sr.stop()
             }
             else{
@@ -258,12 +258,12 @@
       let a = 1
 
       function speak(){
-        /* if(listenning == false){
+        if(listenning == false){
           sr.start()
-        }  */       
-        mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
+        }     
+        /* mqttHook.publish('mobileApp/dashboardFollowme/following',players.value[a])
         console.log(players.value[a])
-        a = a - 1
+        a = a - 1 */
       }
 
       function setOpen(open){

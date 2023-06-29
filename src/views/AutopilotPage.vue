@@ -122,11 +122,18 @@ export default  defineComponent({
   name: 'AutopilotPage',
   components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel, IonProgressBar, IonGrid },
   ionViewDidEnter(){
-    this.player = this.$route.params.player;
     this.mode = this.$route.params.mode;
     if(this.mode == "individual"){
       this.waitingConnection = false;
     }
+    else{
+      this.player = this.$route.params.player;
+    }
+  },
+  ionViewWillLeave(){
+    if(this.flying.value){
+      this.mqttHook.publish("mobileApp/autopilotService/go", 'Stop', 1)
+    }      
   },
   setup() {
 
@@ -191,6 +198,7 @@ export default  defineComponent({
 
       if(mode.value=='individual'){
         mqttHook.subscribe("autopilotService/mobileApp/#", 1)
+        yourTurn.value = true;
       }
       
       mqttHook.registerEvent("+/mobileApp/#", (topic, message) => {
@@ -241,8 +249,10 @@ export default  defineComponent({
           if (data['state'] == 'disarmed')
             armed.value = false
           
-          if (data['state'] == 'flying')
+          if (data['state'] == 'flying'){
             flying.value = true
+            armed.value = true
+          }
           
           if (data['state'] == 'onHearth')
           {
@@ -288,7 +298,7 @@ export default  defineComponent({
           scenarioPredetermined = false;
           router.push('/')
         }     
-      })
+      }, 'autopilotClient')
     
     })
   

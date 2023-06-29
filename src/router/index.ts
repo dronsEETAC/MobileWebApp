@@ -5,7 +5,7 @@ import ConnectTab from '../views/ConnectTab.vue'
 import AutopilotPage from '../views/AutopilotPage.vue'
 import CameraPage from '../views/CameraPage.vue'
 import LEDsPage from '../views/LEDsPage.vue'
-import SpeechPage from '../views/SpeechPage.vue'
+import AcceleromterPage from '../views/AccelerometerPage.vue'
 import FollowMePage from '../views/FollowMePage.vue'
 
 const routes: Array<RouteRecordRaw> = [
@@ -14,11 +14,15 @@ const routes: Array<RouteRecordRaw> = [
     component: ConnectTab
   },
   {
+    path: '/autopilot/:mode/:player?',
+    component: AutopilotPage
+  },
+  {
     path: '/tabs/',
     component: TabsPage,
     children: [
       {
-        path: 'autopilot/:mode/:player?',
+        path: 'autopilot/:mode',
         component: AutopilotPage,
         name: "AutopilotTab",
       },
@@ -33,9 +37,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "LEDsTab"
       },
       {
-        path: 'speech',
-        component: SpeechPage,
-        name: "SpeechTab"
+        path: 'accelerometer',
+        component: AcceleromterPage,
+        name: "AccelerometerTab"
       }
     ]
   },
