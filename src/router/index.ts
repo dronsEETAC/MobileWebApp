@@ -7,6 +7,7 @@ import CameraPage from '../views/CameraPage.vue'
 import LEDsPage from '../views/LEDsPage.vue'
 import AcceleromterPage from '../views/AccelerometerPage.vue'
 import FollowMePage from '../views/FollowMePage.vue'
+import CircusPage from '../views/CircusPage.vue'
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -40,6 +41,11 @@ const routes: Array<RouteRecordRaw> = [
         path: 'accelerometer',
         component: AcceleromterPage,
         name: "AccelerometerTab"
+      },
+      {
+        path: 'circus',
+        component: CircusPage,
+        name: "CircusTab"
       }
     ]
   },

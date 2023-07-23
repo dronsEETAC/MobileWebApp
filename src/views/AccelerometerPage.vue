@@ -61,7 +61,7 @@
       const ScreenOrientation = window.screen.orientation;
       const mqttHook = useMQTT();
       let correctOrientation = ref(false);
-      let direction = "stop";
+      let direction = "Stop";
 
       let state = ref('disconneced');
       let connected = ref(false);

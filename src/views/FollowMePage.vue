@@ -5,32 +5,42 @@
           <ion-title class="ion-text-center">Drone Engineering Ecosystem</ion-title>
         </ion-toolbar>
       </ion-header>
-      <ion-grid class="ion-text-center" v-if="!yourTurn && !photo">
-        <ion-col>
-          <ion-row class="ion-padding-top">
-            <h2 style="font-size: 30px;">Following:</h2>
-          </ion-row>
-          <ion-row class="ion-padding-top">
-            <h2>{{ followingName }}</h2>
-          </ion-row> 
-        </ion-col>                 
-      </ion-grid>
-      <ion-content v-if="yourTurn && !photo" style="display: flex; justify-content: center;" class="ion-text-center" :fullscreen="true">
-        <ion-grid>
+      <ion-grid class="ion-text-center" v-if="!yourTurn && !photo" style="margin: 5px">
+        <ion-row class="ion-padding-top" style="height: 100px; margin-top: 80%;">
           <ion-col>
-            <ion-row style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+            <h2 style="font-size: 30px;">Following:</h2>
+          </ion-col> 
+        </ion-row>                        
+      </ion-grid>
+      <ion-grid class="ion-text-center" v-if="!yourTurn && !photo">
+        <ion-row style="height: 100px; margin-bottom: 80%;">
+          <ion-col>
+            <h2 style="font-size: 30px;">{{followingName}}</h2>
+          </ion-col>
+        </ion-row> 
+      </ion-grid>
+      <div v-if="yourTurn && !photo" class="ion-text-center">
+        <ion-grid class="ion-text-center" style="height: 200px; margin-top: 5px;">          
+          <ion-row style="height: 100px; margin-top: 10%;">
+            <ion-col>
               <ion-text>
                 <h2 style="font-size: xx-large">Say a name:</h2>
               </ion-text>
-            </ion-row>
-          </ion-col>          
-        </ion-grid>        
-        <ion-list style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
-          <ion-item v-for="(name,index) in players" :key="index">
-            <ion-label style="font-size: 25px;">{{ name }}</ion-label>
-          </ion-item>
-        </ion-list>                      
-      </ion-content> 
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+        <ion-grid class="ion-text-center">
+          <ion-row style="height: 100px; margin-top: 0px;">
+            <ion-col>
+              <ion-list style="display: flex; justify-content: center; align-items: center; flex-direction: column;">
+                <ion-item v-for="(name,index) in players" :key="index">
+                  <ion-label style="font-size: 25px;">{{ name }}</ion-label>
+                </ion-item>
+              </ion-list>
+            </ion-col> 
+          </ion-row>          
+        </ion-grid>           
+      </div> 
       <ion-content v-if="photo">
         <ion-header>
           <ion-toolbar>
@@ -75,6 +85,7 @@
       const mqttHook = useMQTT();
       const router = useRouter();
       const route = useRoute();
+
       let followingName = ref('');
       let players = ref([])
       let username = ref(undefined);
@@ -85,7 +96,6 @@
       let canvasWidth = ref(window.innerWidth);
       let canvasHeight = ref(window.innerHeight);
       let myContext;
-      let myCanvas = ref(null)
       let lastName = ref("")
 
 
@@ -147,12 +157,14 @@
 
         mqttHook.registerEvent("+/mobileApp/#", (topic, message)=>{
           console.log(topic)
+          console.log(username.value)
           if(topic=='dashboardFollowme/mobileApp/updateList'){
             let data = JSON.parse(message);
             players.value = data.players;
           }
           else if(topic=='dashboardFollowme/mobileApp/yourTurn/'+username.value){
             yourTurn.value = true;
+            console.log(yourTurn.value)
           }                    
         })
 
@@ -196,38 +208,21 @@
             maximumAge: 0,
           }
           interval = setInterval(() => {
-            navigator.geolocation.getCurrentPosition(
+           navigator.geolocation.getCurrentPosition(
+            //navigator.geolocation.watchPosition(
               pos => {
                 position = [pos.coords.latitude,pos.coords.longitude]
                 console.log(position)
-                     
-                
-              },err => {
-                console.log("error")
-              }, options
-            )
-
-            //fem aixo per fer veure que tinc la posicio
-            /* if(username.value == 'joana'){
-              position = p1wp[a]
-            }
-            else if(username.value == 'pepe'){
-              position = p2wp[a]
-            }
-            else if(username.value == 'maria'){
-              position = p3wp[a]
-            }
-            a = a + 1;
-            if(a == 10){
-              a = 0;
-            }  */
-
-            message = {
+                message = {
                   player: username.value,
                   position: position
                 }
                 mqttHook.publish('mobileApp/dashboardFollowme/position', JSON.stringify(message)); 
-            
+                
+              },err => {
+                console.log("error")
+              }, options
+            )            
             
           }, 2000)
 
@@ -286,7 +281,6 @@
         setOpen,
         canvasHeight,
         canvasWidth,
-        myCanvas,
         myContext,
         lastName
       }

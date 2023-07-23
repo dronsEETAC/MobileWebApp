@@ -141,6 +141,8 @@ export default  defineComponent({
     const mqttHook = useMQTT();
     const route = useRoute();
     const router = useRouter();
+
+    // Drone information
     let state = ref('connected');
     let armed = ref(false);
     let flying = ref(false);
@@ -150,6 +152,8 @@ export default  defineComponent({
     let heading = ref(undefined);
     let battery = ref(undefined);
     let direction = ref(undefined);
+
+    // Alerts
 
     const presentAlert = async () => {
         const alert = await alertController.create({
@@ -178,6 +182,8 @@ export default  defineComponent({
 
       await alert.present();
     };
+
+    // Variables Controllers
 
     let mode = ref(undefined);
     let player = ref(undefined);
@@ -302,6 +308,19 @@ export default  defineComponent({
     
     })
   
+    function armDrone() {
+      state.value = 'arming';
+      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
+    }
+
+    function disarmDrone() {
+      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
+    }
+
+    function takeOff() {
+      state.value = 'takingOff'
+      mqttHook.publish("mobileApp/autopilotService/takeOff", "", 1)
+    }
 
     function go (event) {      
       if(state.value == 'practice'){
@@ -325,21 +344,27 @@ export default  defineComponent({
       } 
       
     }
-    function armDrone() {
-      state.value = 'arming';
-      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
-    }
 
-    function disarmDrone() {
-      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
-    }
-
-    function takeOff() {
-      state.value = 'takingOff'
-      mqttHook.publish("mobileApp/autopilotService/takeOff", "", 1)
-    }
     function returnToLaunch(){
       mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
+    }
+
+    function drop(){
+      if(state.value == 'practice'){
+        if(yourTurn.value){          
+          mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+        }          
+      } 
+      else{
+        if (!flying.value){
+          presentAlert()
+        } else {
+          if(yourTurn.value){
+            mqttHook.publish("mobileApp/autopilotService/drop", '', 1);
+            mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+          }      
+        }
+      } 
     }
 
     function setSector(sectorJSON){
@@ -375,25 +400,8 @@ export default  defineComponent({
         return true;
       }
       
-    }  
+    }      
     
-    function drop(){
-      if(state.value == 'practice'){
-        if(yourTurn.value){          
-          mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
-        }          
-      } 
-      else{
-        if (!flying.value){
-          presentAlert()
-        } else {
-          if(yourTurn.value){
-            mqttHook.publish("mobileApp/autopilotService/drop", '', 1);
-            mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
-          }      
-        }
-      } 
-    }
 
     return {
       takeOff,

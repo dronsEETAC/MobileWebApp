@@ -23,6 +23,11 @@
           <ion-label>Accelerometer</ion-label>
         </ion-tab-button>
 
+        <ion-tab-button tab="CircusTab" href='/tabs/circus'>
+          <ion-icon :icon="accessibility" />
+          <ion-label>Circus</ion-label>
+        </ion-tab-button>
+
         <ion-tab-button @click="disconnect" tab="DisconectTab">
           <ion-icon :icon="exitOutline" />
           <ion-label>Disconnect</ion-label>
@@ -35,7 +40,7 @@
 <script>
 import { defineComponent, ref, inject, onMounted } from 'vue';
 import { alertController, IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { airplaneOutline, cameraOutline, exitOutline, sunny, moveOutline  } from 'ionicons/icons';
+import { airplaneOutline, cameraOutline, exitOutline, sunny, moveOutline, accessibility } from 'ionicons/icons';
 import { useMQTT } from 'mqtt-vue-hook' 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -103,7 +108,8 @@ export default defineComponent({
       state,
       newRouteAutopilot,
       disconnect,
-      moveOutline
+      moveOutline,
+      accessibility
     }
   }
 });
