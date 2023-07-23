@@ -5,7 +5,7 @@ import ConnectTab from '../views/ConnectTab.vue'
 import AutopilotPage from '../views/AutopilotPage.vue'
 import CameraPage from '../views/CameraPage.vue'
 import LEDsPage from '../views/LEDsPage.vue'
-import AcceleromterPage from '../views/AccelerometerPage.vue'
+import OrientationPage from '../views/OrientationPage.vue'
 import FollowMePage from '../views/FollowMePage.vue'
 import CircusPage from '../views/CircusPage.vue'
 
@@ -38,9 +38,9 @@ const routes: Array<RouteRecordRaw> = [
         name: "LEDsTab"
       },
       {
-        path: 'accelerometer',
-        component: AcceleromterPage,
-        name: "AccelerometerTab"
+        path: 'orientation',
+        component: OrientationPage,
+        name: "OrientationTab"
       },
       {
         path: 'circus',

@@ -18,9 +18,9 @@
           <ion-label>LEDs</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="AccelerometerTab" href='/tabs/accelerometer'>
+        <ion-tab-button tab="OrientationTab" href='/tabs/orientation'>
           <ion-icon :icon="moveOutline" />
-          <ion-label>Accelerometer</ion-label>
+          <ion-label>Orientation</ion-label>
         </ion-tab-button>
 
         <ion-tab-button tab="CircusTab" href='/tabs/circus'>

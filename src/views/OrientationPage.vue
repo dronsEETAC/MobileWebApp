@@ -2,7 +2,7 @@
     <ion-page>
       <ion-header>
         <ion-toolbar>
-          <ion-title class="ion-text-center">Accelerometer section</ion-title>
+          <ion-title class="ion-text-center">Device orientation section</ion-title>
         </ion-toolbar>
       </ion-header>
       <ion-grid v-if="!correctOrientation">
@@ -45,7 +45,7 @@
   import { useMQTT } from 'mqtt-vue-hook'
   
   export default  defineComponent({
-    name: 'AccelerometerPage',
+    name: 'OrientationPage',
     components: { 
       IonHeader, IonToolbar, IonPage, IonTitle, IonGrid, IonCol, IonRow, IonText, IonButton
     },
