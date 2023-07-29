@@ -41,7 +41,7 @@ app.use(router)
 app.provide('emitter', emitter);
 
 //app.use(mqttVueHook, 'mqtts://10.10.10.1:8001', {
-app.use(mqttVueHook, 'wss://broker.hivemq.com:8884/mqtt', {
+/* app.use(mqttVueHook, 'wss://broker.hivemq.com:8884/mqtt', {
 //app.use(mqttVueHook, 'mqtts://192.168.237.35:8001', { //8001 and mqtts for secure connections
 //app.use(mqttVueHook, 'mqtt://localhost:8000', {
   clean: false,
@@ -49,6 +49,15 @@ app.use(mqttVueHook, 'wss://broker.hivemq.com:8884/mqtt', {
   clientId: `MobileApp_${Math.random().toString(16).substring(2, 10)}`,
   connectTimeout: 4000,
  // rejectUnauthorized: false
+}) */
+
+app.use(mqttVueHook, 'wss://classpip.upc.edu:8883/mqtt', {
+   clean: true,
+   keepalive: 60,
+   clientId: `MobileApp_${Math.random().toString(16).substring(2, 10)}`,
+   connectTimeout: 4000,
+   username: 'username',
+   password: 'password'
 })
 
 
