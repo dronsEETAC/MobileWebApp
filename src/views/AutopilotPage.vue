@@ -122,11 +122,18 @@ export default  defineComponent({
   name: 'AutopilotPage',
   components: { IonPage, IonHeader, IonToolbar, IonTitle, IonContent, IonButton, IonItem, IonRow, IonCol, IonLabel, IonProgressBar, IonGrid },
   ionViewDidEnter(){
-    this.player = this.$route.params.player;
     this.mode = this.$route.params.mode;
     if(this.mode == "individual"){
       this.waitingConnection = false;
     }
+    else{
+      this.player = this.$route.params.player;
+    }
+  },
+  ionViewWillLeave(){
+    if(this.flying.value){
+      this.mqttHook.publish("mobileApp/autopilotService/go", 'Stop', 1)
+    }      
   },
   setup() {
 
@@ -134,6 +141,8 @@ export default  defineComponent({
     const mqttHook = useMQTT();
     const route = useRoute();
     const router = useRouter();
+
+    // Drone information
     let state = ref('connected');
     let armed = ref(false);
     let flying = ref(false);
@@ -143,6 +152,8 @@ export default  defineComponent({
     let heading = ref(undefined);
     let battery = ref(undefined);
     let direction = ref(undefined);
+
+    // Alerts
 
     const presentAlert = async () => {
         const alert = await alertController.create({
@@ -172,6 +183,8 @@ export default  defineComponent({
       await alert.present();
     };
 
+    // Variables Controllers
+
     let mode = ref(undefined);
     let player = ref(undefined);
     let sector = ref([]);
@@ -191,6 +204,7 @@ export default  defineComponent({
 
       if(mode.value=='individual'){
         mqttHook.subscribe("autopilotService/mobileApp/#", 1)
+        yourTurn.value = true;
       }
       
       mqttHook.registerEvent("+/mobileApp/#", (topic, message) => {
@@ -241,8 +255,10 @@ export default  defineComponent({
           if (data['state'] == 'disarmed')
             armed.value = false
           
-          if (data['state'] == 'flying')
+          if (data['state'] == 'flying'){
             flying.value = true
+            armed.value = true
+          }
           
           if (data['state'] == 'onHearth')
           {
@@ -288,10 +304,23 @@ export default  defineComponent({
           scenarioPredetermined = false;
           router.push('/')
         }     
-      })
+      }, 'autopilotClient')
     
     })
   
+    function armDrone() {
+      state.value = 'arming';
+      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
+    }
+
+    function disarmDrone() {
+      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
+    }
+
+    function takeOff() {
+      state.value = 'takingOff'
+      mqttHook.publish("mobileApp/autopilotService/takeOff", "", 1)
+    }
 
     function go (event) {      
       if(state.value == 'practice'){
@@ -315,21 +344,27 @@ export default  defineComponent({
       } 
       
     }
-    function armDrone() {
-      state.value = 'arming';
-      mqttHook.publish("mobileApp/autopilotService/armDrone", "", 1);
-    }
 
-    function disarmDrone() {
-      mqttHook.publish("mobileApp/autopilotService/disarmDrone", "", 1)
-    }
-
-    function takeOff() {
-      state.value = 'takingOff'
-      mqttHook.publish("mobileApp/autopilotService/takeOff", "", 1)
-    }
     function returnToLaunch(){
       mqttHook.publish("mobileApp/autopilotService/returnToLaunch", "", 1)
+    }
+
+    function drop(){
+      if(state.value == 'practice'){
+        if(yourTurn.value){          
+          mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+        }          
+      } 
+      else{
+        if (!flying.value){
+          presentAlert()
+        } else {
+          if(yourTurn.value){
+            mqttHook.publish("mobileApp/autopilotService/drop", '', 1);
+            mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
+          }      
+        }
+      } 
     }
 
     function setSector(sectorJSON){
@@ -365,25 +400,8 @@ export default  defineComponent({
         return true;
       }
       
-    }  
+    }      
     
-    function drop(){
-      if(state.value == 'practice'){
-        if(yourTurn.value){          
-          mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
-        }          
-      } 
-      else{
-        if (!flying.value){
-          presentAlert()
-        } else {
-          if(yourTurn.value){
-            mqttHook.publish("mobileApp/autopilotService/drop", '', 1);
-            mqttHook.publish("mobileApp/dashboardControllers/drop", '', 1);          
-          }      
-        }
-      } 
-    }
 
     return {
       takeOff,

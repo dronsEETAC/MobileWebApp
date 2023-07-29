@@ -3,7 +3,7 @@
     <ion-tabs>
       <ion-router-outlet></ion-router-outlet>
       <ion-tab-bar slot="bottom">
-        <ion-tab-button tab="AutopilotTab" :href='newRouteAutopilot'>
+        <ion-tab-button tab="AutopilotTab" href='/tabs/autopilot/individual'>
           <ion-icon :icon="airplaneOutline" />
           <ion-label>Autopilot</ion-label>
         </ion-tab-button>
@@ -18,9 +18,14 @@
           <ion-label>LEDs</ion-label>
         </ion-tab-button>
 
-        <ion-tab-button tab="SpeechTab" href='/tabs/speech'>
-          <ion-icon :icon="micOutline" />
-          <ion-label>Speech</ion-label>
+        <ion-tab-button tab="OrientationTab" href='/tabs/orientation'>
+          <ion-icon :icon="moveOutline" />
+          <ion-label>Orientation</ion-label>
+        </ion-tab-button>
+
+        <ion-tab-button tab="CircusTab" href='/tabs/circus'>
+          <ion-icon :icon="accessibility" />
+          <ion-label>Circus</ion-label>
         </ion-tab-button>
 
         <ion-tab-button @click="disconnect" tab="DisconectTab">
@@ -35,7 +40,7 @@
 <script>
 import { defineComponent, ref, inject, onMounted } from 'vue';
 import { alertController, IonTabBar, IonTabButton, IonTabs, IonLabel, IonIcon, IonPage, IonRouterOutlet } from '@ionic/vue';
-import { airplaneOutline, cameraOutline, exitOutline, sunny, micOutline } from 'ionicons/icons';
+import { airplaneOutline, cameraOutline, exitOutline, sunny, moveOutline, accessibility } from 'ionicons/icons';
 import { useMQTT } from 'mqtt-vue-hook' 
 import { useRoute, useRouter } from 'vue-router'
 
@@ -66,7 +71,7 @@ export default defineComponent({
       newRouteAutopilot.value = newRouteAutopilot.value + '/' + route.params.player
     }
 
-    function disconnect(){            
+    /* function disconnect(){            
       if(state.value == 'connected' || state.value == 'onHearth' || state.value == 'disarmed'){ 
         if(mode.value == "controllers"){
           mqttHook.publish("mobileApp/dashboardControllers/disconnect",'');
@@ -79,6 +84,10 @@ export default defineComponent({
       else{
         flyingAlert();
       }
+    } */
+
+    function disconnect(){
+      router.push('/');
     }
 
     onMounted(() => {
@@ -99,7 +108,8 @@ export default defineComponent({
       state,
       newRouteAutopilot,
       disconnect,
-      micOutline
+      moveOutline,
+      accessibility
     }
   }
 });
