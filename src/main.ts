@@ -56,8 +56,8 @@ app.use(mqttVueHook, 'wss://classpip.upc.edu:8883/mqtt', {
    keepalive: 60,
    clientId: `MobileApp_${Math.random().toString(16).substring(2, 10)}`,
    connectTimeout: 4000,
-   username: 'username',
-   password: 'password'
+   username: 'dronsEETAC',
+   password: 'mimara1456.'
 })
 
 
