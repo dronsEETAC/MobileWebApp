@@ -46,6 +46,9 @@ It can be found inside the individual mode, on the 'Circus' tab. Once accessed, 
 
 When you are confident enough and the practice finishes, you will be connected to the Autopilot Service and will be able to arm and take off the drone. Once the drone is flying you can repeat your poses to control it. You will also have a button to "Return to Launch".
 
+<img width="141" alt="circus" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/8eef1e7a-77b4-4095-990b-e54de1242220">
+
+
 ### Controllers Game
 
 It is a multiplayer game that allows each player to guide the drone from their mobile. To do this the dronelab is divided in sectors and each sector is assigned to a player. When the drone is in that sector, is the turn of the corresponding player to control it
@@ -56,6 +59,9 @@ When the sectors are created the practice starts. In here the players can practi
 
 When they are comfortable enough the practice finishes and the first player will be able to arm and take off the drone. After that they can guide the drone and when a player is done playing they can click the "Return Home" button.
 
+<img width="176" alt="controllers" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/ebdb05e9-944d-49e6-b404-b63c99ee8aaa">
+
+
 ### Follow Me Game
 
 In this game the players are distributed around the dronelab with their respectives mobiles. When it is the player's turn, they say a name of another player to the mobile and the drone moves to the position of that player and takes a photo of them. Then sends it to the rest of the players and it is the turn of the player of whom the picture has been taken.
@@ -63,6 +69,9 @@ In this game the players are distributed around the dronelab with their respecti
 First the players must choose the "Follow Me Game" option and enter their names. After that a position will be assigned to each of them and they will go to that position physically. Once that is done the dron starts to fly and the it is the first player's turn. In the screen of the first player the names of the other players are shown and he can click the microphone icon to say one name out loud.
 
 Then the drone moves to the position of the player whose name has been said and takes a photo of them. All of the players receive the photo on a new window which they can close or it will be closed automatically. Then it is the next player's turn to say a name out loud.
+
+<img width="155" alt="followme" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/3767d9de-0efd-4cc4-8f9d-8c91b085f069">
+
 
 ## Installation and contribution
 In order to run and contribute to the modules implemented in Vue, you need to install Node.js (version v16.14.2) and @vue/cli version 4.5.15 and @ionic/cli (in case of the Mobile app). We recomend Visual Code as IDE for development in Vue.    
