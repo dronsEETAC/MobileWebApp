@@ -1,8 +1,10 @@
 # Ionic-Vue Mobile App
-![IonicAppDemo](https://user-images.githubusercontent.com/100842082/213981154-11cb3b23-81cc-4eac-ad5d-25c1dac7714a.png)
+<img width="147" alt="Captura de pantalla 2023-07-26 133013" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/32831254-95ac-4c22-a088-e43465042e08">
+<img width="148" alt="Captura de pantalla 2023-08-23 111445" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/eb033c4a-e578-41c4-a8b9-8881b6ae864e">
+<img width="150" alt="Captura de pantalla 2023-08-23 111511" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/8e579d0d-0010-4866-8994-dab152a8d4df">
 
 
-The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows the user to control the drone individually and to access to the different games of the ecosystem.
+The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows the user to control the drone individually and to access the different games of the ecosystem.
 
 For the individual control there is a bunch of things a user can do:
 - Showing the picture/video stream sent by the camera service
@@ -46,6 +48,7 @@ It can be found inside the individual mode, on the 'Circus' tab. Once accessed, 
 
 When you are confident enough and the practice finishes, you will be connected to the Autopilot Service and will be able to arm and take off the drone. Once the drone is flying you can repeat your poses to control it. You will also have a button to "Return to Launch".
 
+<img width="146" alt="Captura de pantalla 2023-07-26 130454" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/54293c00-5fad-43ea-9efc-4ea6e1d5a917">
 <img width="141" alt="circus" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/8eef1e7a-77b4-4095-990b-e54de1242220">
 
 
