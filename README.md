@@ -1,10 +1,10 @@
-# Ionic-Vue Mobile App
+# Mobile Web App
 <img width="147" alt="Captura de pantalla 2023-07-26 133013" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/32831254-95ac-4c22-a088-e43465042e08">
 <img width="148" alt="Captura de pantalla 2023-08-23 111445" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/eb033c4a-e578-41c4-a8b9-8881b6ae864e">
 <img width="150" alt="Captura de pantalla 2023-08-23 111511" src="https://github.com/JoanaOP/IonicVueMobileAppDEE/assets/73441184/8e579d0d-0010-4866-8994-dab152a8d4df">
 
 
-The IonicVueMobileAppDEE is a front-end module developed in Ionic Vue. It allows the user to control the drone individually and to access the different games of the ecosystem.
+The Mobile Web App is a front-end module developed in Ionic Vue. It allows the user to control the drone individually and to access the different games of the ecosystem.
 
 For the individual control there is a bunch of things a user can do:
 - Showing the picture/video stream sent by the camera service
@@ -82,29 +82,11 @@ To contribute to must follow the contribution protocol describen in the main rep
 [![DroneEngineeringEcosystem Badge](https://img.shields.io/badge/DEE-MainRepo-brightgreen.svg)](https://github.com/dronsEETAC/DroneEngineeringEcosystemDEE)
 To run the application, after cloning the repo in your laptop you must execute these commands:
 ```
-cd IonicVueMobileAppDEE
+cd MobileWebApp
 npm install
 npm run serve
 ```
-When running the code you may get errors such as this:
 
-Module not found: Error: Can't resolve 'fs' in 'C:\Users\USER\Documents\Miguel\DEE_all_repos\IonicVueMobileAppDEE\node_modules\opencv.js'
-
-In this case, you must include the following code in the package.json in node-modules/opencv.js:     
-```
-  "browser": {
-    "fs": false,
-    "path": false,
-    "os": false,
-    "crypto": false
-  }
-  ```
-Finally, if you are running this application on a machine with its own domain, you must add on the vue.config.js file the following lines:
-```
-devServer: {
-          host: "dronseetac.upc.edu",
-          port: 8104
-  }
 ```
 
 
