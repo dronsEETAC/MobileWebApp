@@ -89,7 +89,7 @@ npm run serve
 
 ## Code   
 Have a look to the code here:
-[Mobile Web App ode](https://youtu.be/jvVUOkfVeDE)
+[Mobile Web App code](https://youtu.be/jvVUOkfVeDE)
 
 
 
